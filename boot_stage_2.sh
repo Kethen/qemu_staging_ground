@@ -8,8 +8,8 @@ PLATFORM="$PLATFORM -global ICH9-LPC.acpi-pci-hotplug-with-bridge-support=off"
 NETWORK="-netdev user,id=eth0"
 NETWORK="$NETWORK -device virtio-net,netdev=eth0"
 
-#STORAGE="-drive if=none,id=maindisk,format=raw,file=maindisk.img,discard=unmap -object iothread,id=iomaindisk -device virtio-blk,iothread=iomaindisk,drive=maindisk"
-STORAGE="-drive if=virtio,id=maindisk,format=raw,file=maindisk.img,discard=unmap"
+STORAGE="-drive if=none,id=maindisk,format=raw,file=maindisk.img,discard=unmap -object iothread,id=iomaindisk -device virtio-blk,iothread=iomaindisk,drive=maindisk"
+#STORAGE="-drive if=virtio,id=maindisk,format=raw,file=maindisk.img,discard=unmap"
 
 USB="-device qemu-xhci"
 
