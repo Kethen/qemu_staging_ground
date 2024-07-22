@@ -17,16 +17,42 @@ INPUT="-device virtio-keyboard-pci"
 INPUT="$INPUT -device virtio-multitouch-pci"
 #INPUT="$INPUT -device usb-mouse"
 #INPUT="$INPUT -device usb-tablet"
-while read -r LINE; do
-	DEVICES=$(echo $LINE | sed 's/^H: Handlers=//' | sed -E 's/js[0-9]+//g')
-	for d in $DEVICES
-	do
-		if [ -n "$(echo $d | grep event)" ]
+if false
+then
+	while read -r LINE; do
+		DEVICES=$(echo $LINE | sed 's/^H: Handlers=//' | sed -E 's/js[0-9]+//g')
+		for d in $DEVICES
+		do
+			if [ -n "$(echo $d | grep event)" ]
+			then
+				INPUT="$INPUT -device virtio-input-host-pci,evdev=/dev/input/$d"
+			fi
+		done
+	done <<< $(cat /proc/bus/input/devices | grep -E 'js[0-9]+' | grep -v mouse | grep -v kbd)
+else
+	DEVICE_NAME=""
+	while read -r LINE; do
+		if [ -n "$(echo $LINE | grep 'N: Name=')" ]
 		then
-			INPUT="$INPUT -device virtio-input-host-pci,evdev=/dev/input/$d"
+			DEVICE_NAME=$(echo $LINE | sed -E 's/N: Name="(.+)"/\1/')
+			continue
 		fi
-	done
-done <<< $(cat /proc/bus/input/devices | grep -E 'js[0-9]+' | grep -v mouse | grep -v kbd)
+
+		if [ -n "$(echo $LINE | grep 'H: Handlers=')" ]
+		then
+			if [ -n "$(echo $DEVICE_NAME | grep -E 'Microsoft X-Box 360 pad [0-9]+')" ]
+			then
+				DEVICES=$(echo $LINE | sed 's/^H: Handlers=//' | sed -E 's/js[0-9]+//g')
+				for d in $DEVICES
+				do
+					INPUT="$INPUT -device virtio-input-host-pci,evdev=/dev/input/$d"
+				done
+
+			fi
+			continue
+		fi
+	done <<< $(cat /proc/bus/input/devices)
+fi
 
 #AUDIO="-audiodev pa,id=aud,server=$PULSE_SERVER"
 #AUDIO="-audiodev alsa,id=aud"
