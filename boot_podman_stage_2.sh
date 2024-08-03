@@ -22,7 +22,7 @@ then
         XORG="$XORG --env DISPLAY=$DISPLAY"
         if [ -e $HOME/.Xauthority ]
         then
-                "$XORG -v $HOME/.Xauthority:/home_dir/.Xauthority"
+                XORG="$XORG -v $HOME/.Xauthority:/home_dir/.Xauthority"
         fi
 fi
 
@@ -70,9 +70,9 @@ pipewire_socket_path="$pipewire_runtime_dir"/"$pipewire_socket_name"
 echo $pipewire_socket_path
 if [ -e "$pipewire_socket_path" ]
 then
-        PIPEWIRE="$PIPEWIRE -v $pipewire_socket_path:/tmp/pipewire_socket"
-        PIPEWIRE="$PIPEWIRE --env PIPEWIRE_RUNTIME_DIR=/tmp"
-        PIPEWIRE="$PIPEWIRE --env PIPEWIRE_REMOTE=pipewire_socket"
+	PIPEWIRE="$PIPEWIRE -v $pipewire_socket_path:/tmp/pipewire_socket"
+	PIPEWIRE="$PIPEWIRE --env PIPEWIRE_RUNTIME_DIR=/tmp"
+	PIPEWIRE="$PIPEWIRE --env PIPEWIRE_REMOTE=pipewire_socket"
 fi
 
 DRI=""
@@ -83,6 +83,10 @@ then
         do
                 DRI="$DRI -v /dev/$f:/dev/$f"
         done
+fi
+if [ -d /dev/udmabuf ]
+then
+	DRI="$DRI -v /dev/udmabuf /dev/udmabuf"
 fi
 
 INPUT=""
@@ -122,3 +126,4 @@ podman run \
 	$KVM \
 	$IMAGE_NAME \
 	boot_stage_2.sh
+

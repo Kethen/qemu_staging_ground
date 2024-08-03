@@ -64,14 +64,36 @@ AUDIO="$AUDIO -device ich9-intel-hda -device hda-micro,audiodev=aud"
 DISP="-display gtk,gl=on,full-screen=on"
 #DISP="-display gtk,gl=es,full-screen=on"
 DISP="$DISP -vga none -device virtio-vga-gl,xres=1280,yres=800"
+#DISP="$DISP -vga none -device virtio-vga-rutabaga,xres=1280,yres=800,cross-domain=true,gfxstream-vulkan=true,x-gfxstream-gles=true,wayland-socket-path=./wayland.sock"
 
 MISC="-nodefaults"
 MISC="$MISC -name bliss,debug-threads=on"
+MISC="$MISC -rtc base=utc"
 
 QEMU="qemu-kvm"
 QEMU="./qemu/build/qemu-system-x86_64"
 
 export vblank_mode=0
 
+
+WESTON_PID=""
+if false
+then
+	if [ -z "$XDG_RUNTIME_DIR" ]
+	then
+		export XDG_RUNTIME_DIR=/tmp
+	fi
+	weston -S wayland.sock &
+	WESTON_PID=$!
+
+	$QEMU -device virtio-vga-rutabaga,help
+fi
+
 #$QEMU $PLATFORM $NETWORK $STORAGE $USB $INPUT $AUDIO $DISP $MISC -cdrom Fedora-Workstation-Live-x86_64-40-1.14.iso -boot d -L /usr/share/seabios -L /usr/share/ipxe/qemu -L /usr/share/qemu -L /usr/share/seavgabios
 $QEMU $PLATFORM $NETWORK $STORAGE $USB $INPUT $AUDIO $DISP $MISC -kernel kernel -append 'SRC=/bliss14 DATA=userdata CODEC2_LEVEL=0 FFMPEG_OMX_CODEC=1 VIRT_WIFI=1 OMX_NO_YUV420=1' -initrd initrd.img -L /usr/share/seabios -L /usr/share/ipxe/qemu -L /usr/share/qemu -L /usr/share/seavgabios
+
+
+if [ -n "$WESTON_PID" ]
+then
+	kill -9 $WESTON_PID
+fi
